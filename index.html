@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)file:///C:/Users/ENGAS/Downloads/index.html -->
+<html lang="en" dir="ltr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Special Machines - Question Bank Quiz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #1c2128;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --wrong: #f85149;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --correct-bg: rgba(63,185,80,0.12);
+    --wrong-bg: rgba(248,81,73,0.12);
+    --hover: #21262d;
+    --number-bg: #21262d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 60px;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 28px 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .header h1 {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .header p { color: var(--muted); font-size: 0.95rem; }
+
+  /* ─── Progress bar ─── */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .progress-label { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+
+  /* ─── Score strip ─── */
+  .score-strip {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 6px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .score-pill .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-correct { background: var(--accent2); }
+  .dot-wrong   { background: var(--wrong); }
+  .dot-left    { background: var(--muted); }
+
+  /* ─── Question card ─── */
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px 24px;
+    margin-bottom: 20px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .q-number {
+    background: var(--number-bg);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 4px 12px;
+    border-radius: 99px;
+  }
+
+  .question-text {
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 22px;
+  }
+
+  /* ─── Options ─── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    user-select: none;
+    text-align: right;
+  }
+  .option:hover:not(.disabled) {
+    background: var(--hover);
+    border-color: var(--accent);
+    transform: translateX(-2px);
+  }
+  .option.disabled { cursor: default; }
+
+  .key-badge {
+    min-width: 28px;
+    height: 28px;
+    background: var(--number-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .option-text { flex: 1; font-size: 0.97rem; line-height: 1.5; }
+
+  .status-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  /* ─── Result states ─── */
+  .option.correct {
+    background: var(--correct-bg);
+    border-color: var(--accent2);
+  }
+  .option.correct .key-badge { background: var(--accent2); color: #0d1117; border-color: var(--accent2); }
+  .option.correct .status-icon { opacity: 1; }
+
+  .option.wrong {
+    background: var(--wrong-bg);
+    border-color: var(--wrong);
+  }
+  .option.wrong .key-badge { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+  .option.wrong .status-icon { opacity: 1; }
+
+  /* ─── Feedback banner ─── */
+  .feedback {
+    margin-top: 18px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .feedback.show { display: flex; }
+  .feedback.correct-fb { background: var(--correct-bg); border: 1px solid var(--accent2); color: var(--accent2); }
+  .feedback.wrong-fb   { background: var(--wrong-bg);   border: 1px solid var(--wrong);   color: var(--wrong); }
+
+  /* ─── Auto-advance bar ─── */
+  .advance-bar {
+    margin-top: 16px;
+    display: none;
+  }
+  .advance-bar.show { display: block; }
+  .advance-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .advance-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    width: 100%;
+    transition: width linear;
+  }
+  .advance-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  /* ─── Controls ─── */
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--hover); border-color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0d1117;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  /* ─── Keyboard hint ─── */
+  .kb-hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 16px;
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .kb-hint kbd {
+    background: var(--number-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 0.82rem;
+  }
+
+  /* ─── Finish screen ─── */
+  .finish-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .finish-screen.show { display: block; }
+  .finish-icon { font-size: 4rem; margin-bottom: 16px; }
+  .finish-screen h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 8px; }
+  .finish-screen p  { color: var(--muted); margin-bottom: 24px; }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .result-box .val { font-size: 2rem; font-weight: 900; }
+  .result-box .lbl { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .val-correct { color: var(--accent2); }
+  .val-wrong   { color: var(--wrong); }
+
+  @media (max-width: 500px) {
+    .question-card { padding: 20px 16px; }
+    .option { padding: 11px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Special Machines — Question Bank</h1>
+  
+</div>
+
+<div class="score-strip">
+  <div class="score-pill"><span class="dot dot-correct"></span><span id="sc-correct">1</span> Correct</div>
+  <div class="score-pill"><span class="dot dot-wrong"></span><span id="sc-wrong">1</span> Wrong</div>
+  <div class="score-pill"><span class="dot dot-left"></span><span id="sc-left">233</span> Remaining</div>
+</div>
+
+<div class="progress-wrap" style="max-width:820px;margin:0 auto 24px;">
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width: 3%;"></div></div>
+  <div class="progress-label" id="prog-label">7 / 235</div>
+</div>
+
+<!-- Question card -->
+<div class="question-card" id="q-card">
+  <div class="q-meta">
+    <span class="q-number" id="q-num">Question 8 / 235</span>
+  </div>
+  <div class="question-text" id="q-text">In fig (1) curve A represent</div>
+  <div class="options" id="q-options"><div class="option" data-idx="0">
+      <span class="key-badge">1</span>
+      <span class="option-text">Curve for linear material</span>
+      <span class="status-icon">✓</span>
+    </div><div class="option" data-idx="1">
+      <span class="key-badge">2</span>
+      <span class="option-text">Curve for soft magnetics</span>
+      <span class="status-icon">✗</span>
+    </div><div class="option" data-idx="2">
+      <span class="key-badge">3</span>
+      <span class="option-text">Saturation point</span>
+      <span class="status-icon">✗</span>
+    </div><div class="option" data-idx="3">
+      <span class="key-badge">4</span>
+      <span class="option-text">None of them</span>
+      <span class="status-icon">✗</span>
+    </div></div>
+  <div class="feedback" id="q-feedback"></div>
+  <div class="advance-bar" id="advance-bar">
+    <div class="advance-track"><div class="advance-fill" id="advance-fill" style="transition: width 1500ms linear; width: 0%;"></div></div>
+    <div class="advance-label">Moving to next question automatically…</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="prevQ()">← Previous</button>
+  <button class="btn btn-primary" onclick="nextQ()">Next →</button>
+  <button class="btn" onclick="shuffleAndRestart()">🔀 Shuffle &amp; Start</button>
+  <button class="btn" onclick="restart()">↺ Restart</button>
+</div>
+
+<div class="kb-hint">
+  Choose with keyboard: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> &nbsp;|&nbsp;
+  Navigate: <kbd>→</kbd> <kbd>←</kbd>
+</div>
+
+<!-- Finish screen -->
+<div class="finish-screen" id="finish-screen">
+  <div class="finish-icon" id="finish-icon">🎉</div>
+  <h2 id="finish-title">Done!</h2>
+  <p id="finish-sub">Your score for this session</p>
+  <div class="result-grid">
+    <div class="result-box"><div class="val val-correct" id="fin-correct">0</div><div class="lbl">Correct answers</div></div>
+    <div class="result-box"><div class="val val-wrong" id="fin-wrong">0</div><div class="lbl">Wrong answers</div></div>
+    <div class="result-box"><div class="val" id="fin-pct" style="color:var(--accent)">0%</div><div class="lbl">Score</div></div>
+    <div class="result-box"><div class="val" id="fin-total" style="color:var(--muted)">0</div><div class="lbl">Total questions</div></div>
+  </div>
+  <button class="btn btn-primary" onclick="restart()" style="margin-left:8px">↺ Restart</button>
+  <button class="btn" onclick="shuffleAndRestart()">🔀 Shuffle &amp; Restart</button>
+</div>
+
+<p>                                   Ahmedsaad</p><script>
+// ──────────────────────────────────────────────
+// Question data — all 235 questions
+// ──────────────────────────────────────────────
+const RAW = [
+  {q:"The field produced by a dc source is",opts:["Constant flux","Pulsating flux","Rotating magnetic field"],ans:0},
+  {q:"The field produced by a AC single phase source is",opts:["Constant flux","Pulsating flux","Rotating magnetic field"],ans:1},
+  {q:"The field produced by a three-phase source is",opts:["Constant flux","Pulsating flux","Rotating magnetic field"],ans:2},
+  {q:"Lenz's law is",opts:["V = N dϕ(t)/dt","V = −N dϕ(t)/dt","V = dϕ(t)/dt","None of them"],ans:1},
+  {q:"Fleming rule for a generator",opts:["Fleming's Right-Hand Rule","Fleming's Left-Hand Rule"],ans:0},
+  {q:"Fleming rule for a motor",opts:["Fleming's Right-Hand Rule","Fleming's Left-Hand Rule"],ans:1},
+  {q:"The generation emf",opts:["e_ind = LBV cos(θ)","e_ind = LBV sin(θ)","e_ind = (V×B)·L","Both b and c"],ans:3},
+  {q:"In fig (1) curve A represent",opts:["Curve for linear material","Curve for soft magnetics","Saturation point","None of them"],ans:0},
+  {q:"In fig (1) curve B represent",opts:["Curve for linear material","Curve for soft magnetics","Saturation point","None of them"],ans:1},
+  {q:"In fig (1) Point C represent",opts:["Curve for linear material","Curve for soft magnetics","Saturation point","None of them"],ans:2},
+  {q:"In fig(2) point A represents",opts:["Saturation","Retentivity","Coercivity","Saturation in opposite direction"],ans:0},
+  {q:"In fig(2) point B represents",opts:["Saturation","Retentivity","Coercivity","Saturation in opposite direction"],ans:1},
+  {q:"In fig(2) point C represents",opts:["Saturation","Retentivity","Coercivity","Saturation in opposite direction"],ans:2},
+  {q:"In fig(2) point D represents",opts:["Saturation","Retentivity","Coercivity","Saturation in opposite direction"],ans:3},
+  {q:"In induction motors",opts:["P_r.cu = s·P_g","P_m = (1−s)·P_g","P_r.cu = s/(1−s)·P_m","All of the above is true"],ans:3},
+  {q:"At what condition does the induction motor provide max torque at slip s?",opts:["r = s/(2x)","r = x²/s","r = xs","r = x/s"],ans:2},
+  {q:"Which from the following is a type of dc machine?",opts:["PM machine","Separately excited machine","Shunt excited machine","All of the above"],ans:3},
+  {q:"In PM dc machine the flux depends on",opts:["It is constant","Depends on the supply voltage","Depends on I_a","None of the above"],ans:0},
+  {q:"In shunt dc machine the flux depends on",opts:["It is constant","Depends on the supply voltage","Depends on I_a","None of the above"],ans:1},
+  {q:"In series dc machine the flux",opts:["Is constant","Depends on the supply voltage","Depends on I_a","None of the above"],ans:2},
+  {q:"The starting winding of a single-phase motor is placed in the",opts:["Rotor","Stator","Armature","Field"],ans:1},
+  {q:"One of the characteristics of a single-phase motor is that it",opts:["Is self-starting","Is not self-starting","Requires only one winding","Can rotate in one direction only"],ans:1},
+  {q:"After the starting winding of a single-phase induction motor is disconnected from supply, it continues to run only on .... winding.",opts:["Rotor","Compensating","Field","Running"],ans:3},
+  {q:"If starting winding of a single-phase induction motor is left in the circuit, it will",opts:["Draw excessive current and overheat","Run slower","Run faster","Spark at light loads"],ans:0},
+  {q:"The direction of rotation of a single-phase motor can be reversed by",opts:["Reversing connections of both windings","Reversing connections of starting winding","Using a reversing switch","Reversing supply connections"],ans:1},
+  {q:"If a single-phase induction motor runs slower than normal, the more likely defect is",opts:["Improper fuses","Shorted running winding","Open starting winding","Worn bearings"],ans:3},
+  {q:"The capacitor in a capacitor-start induction-run ac motor is connected in series with ...... winding.",opts:["Starting","Running","Squirrel-cage","Compensating"],ans:0},
+  {q:"A permanent-split single-phase capacitor motor does not have",opts:["Centrifugal switch","Starting winding","Squirrel-cage rotor","High power factor"],ans:0},
+  {q:"The starting torque of a capacitor-start induction-run motor is directly related to the angle α between its two winding currents by the relation",opts:["cos α","sin α","tan α","sin α/2"],ans:1},
+  {q:"In a two-value capacitor motor, the capacitor used for running purposes is a/an",opts:["Dry-type ac electrolytic capacitor","Paper-spaced oil-filled type","Air-capacitor","Ceramic type"],ans:1},
+  {q:"If the centrifugal switch of a two-value capacitor motor using two capacitors fails to open, then",opts:["Electrolytic capacitor will, in all probability, suffer breakdown","Motor will not carry the load","Motor will draw excessively high current","Motor will not come up to the rated speed"],ans:0},
+  {q:"Each of the following statements regarding a shaded-pole motor is true EXCEPT",opts:["Its direction of rotation is from un-shaded to shaded portion of the poles","It has very poor efficiency","It has very poor p.f.","It has high starting torque"],ans:3},
+  {q:"In a single-phase induction motor at start, the two revolving fields produce",opts:["Unequal torques in the rotor conductors","Equal and opposite torque in the rotor conductors","No torque in the rotor conductors","Equal torques in same direction in the rotor conductors"],ans:1},
+  {q:"During running condition if the starting winding of a split phase induction motor is connected",opts:["The motor will continue to rotate","The motor will stop","The main winding will be damaged","The starting winding will burn"],ans:3},
+  {q:"In single-value capacitor-run motor, the low value of capacitor results in",opts:["Higher efficiency","Higher power factor","High starting torque","None of these"],ans:3},
+  {q:"For a two-value capacitor-run motor, if actual value of C = 5 µF and an autotransformer with a transformation ratio of K = 4. then the capacitance of low-voltage primary increases ........... times.",opts:["25","36","80","16"],ans:3},
+  {q:"To improve efficiency of induction motors, the following improvements in design are made",opts:["Larger diameter of winding wire is used","Length of stator core is increased","Stampings are made thin","All of these"],ans:3},
+  {q:"The single-phase induction motor is not self-starting as",opts:["It has concentrated stator windings","It has a small air gap","It has an alternating flux","None of these are correct"],ans:2},
+  {q:"The summation of two equal rotating magnetic fields that are rotating in opposite directions gives",opts:["Revolving flux","Alternating flux","Rotating flux","(a) and (b)"],ans:1},
+  {q:"Does the two-phase motors are self-starting?",opts:["Yes","No","May be","Depends on load"],ans:0},
+  {q:"The main winding of split-phase motor has ............ resistance and reactance.",opts:["Low, low","High, high","High, low","Low, high"],ans:3},
+  {q:"The speed of standard split-phase motors varies about ............ between no load and full-load",opts:["0.5 to 2%","2 to 5%","5 to 10%","10 to 15%"],ans:1},
+  {q:"The advantages of leaving the capacitor permanently in circuit of capacitor-run motors are",opts:["Improvement of over-load capacity","Higher efficiency and quieter running","Higher power factor","All of these"],ans:3},
+  {q:"The two-value capacitor-run motors start with …. capacitance but run with a ....... capacitance.",opts:["Low, low","High, high","High, low","Low, high"],ans:2},
+  {q:"In Single-voltage, externally reversible type, Four leads are brought …….. its housing.",opts:["Outside","Inside","A and B","Neither a nor b"],ans:0},
+  {q:"The Two-speed with two-capacitor type has …………",opts:["2 Running Winding, 2 Starting Winding and 2 Capacitors","2 Running Winding, 2 Starting Winding and 1 Capacitor","1 Running Winding, 1 Starting Winding and 2 Capacitors","1 Running Winding, 1 Starting Winding and 1 Capacitor"],ans:0},
+  {q:"In Single-voltage, non-reversible type, The starting winding leads are connected ……… to the leads of the running winding.",opts:["Internally","Externally","A and B","Neither a nor b"],ans:0},
+  {q:"Single-voltage reversible and with thermostat type provides protection against……",opts:["Over-load","Overheating","Short circuits","All of these"],ans:3},
+  {q:"For two voltage, non-reversible type. When the motor is to operate from lower voltage, the two main winding are connected in……………",opts:["Parallel","Series"],ans:0},
+  {q:"For two voltage, non-reversible type. When the motor is to operate from Higher voltage, the two main winding are connected in………….",opts:["Parallel","Series"],ans:1},
+  {q:"For two voltage, non-reversible type, the starting winding is always operated on ............... Voltage",opts:["Low","High","Medium","None"],ans:0},
+  {q:"Which of The following is a Type of Capacitor–start Motors?",opts:["Single-voltage, non-reversible type","Shaded-pole Single-phase Motor","Split-phase motor","Two-value capacitor-Run Motor"],ans:0},
+  {q:"In single-value capacitor-run motor, the low value of capacitor results in .......",opts:["Higher efficiency","Higher power factor","High starting torque","None of these"],ans:3},
+  {q:"The two values of capacitance for two-value capacitor-run motors can be obtained by ……………",opts:["Two capacitors in parallel","Two capacitors in series","Single capacitor and step-up auto-transformer","A and C"],ans:3},
+  {q:"The direction of rotation of the shaded pole induction motor",opts:["Cannot be reversed","Can be reversed with the help of regulator","Either a or b","None of these"],ans:0},
+  {q:"A repulsion-start induction-run single-phase motor runs as an induction motor only when …………….",opts:["Brushes are shifted to neutral plane","Short-circuited is disconnected","Commutator segments are short-circuited","Stator winding is reversed"],ans:2},
+  {q:"Repulsion-start-induction-run motors can be reversed by ………………",opts:["Reversing either field or armature leads","Reversing either running or starting leads","Shifting brush positions by about 15º","Cannot be reversed"],ans:2},
+  {q:"A repulsion motor is equipped with …………….",opts:["Commutator","Slip-rings","Repeller","Neither (a) nor (b)"],ans:0},
+  {q:"Each of the following statements regarding a shaded-pole motor is true EXCEPT ……………",opts:["Its direction of rotation is fixed","It has very poor efficiency","It has very poor p.f.","It has high starting torque"],ans:3},
+  {q:"In the shaded pole squirrel cage induction motor the flux in the shaded part always ……………",opts:["Lags the flux in unshaded pole","Leads the flux in unshaded pole","Is in phase with the flux in unshaded pole","None of the above"],ans:0},
+  {q:"The two-value capacitor-run motors start with ………. capacitance but run with a ………. Capacitance.",opts:["Low, low","High, high","High, low","Low, high"],ans:2},
+  {q:"The advantages of leaving the capacitor permanently in circuit of capacitor-run motors are …………….",opts:["Improvement of over-load capacity","Higher efficiency and quieter running","Higher power factor","All of these"],ans:3},
+  {q:"In a two-value capacitor motor, the capacitor used for running purposes is a/an…………….",opts:["Dry-type ac electrolytic capacitor","Paper-spaced oil-filled type","Air-capacitor","Ceramic type"],ans:1},
+  {q:"If the centrifugal switch of a two-value capacitor motor using two capacitors fails to open, then……….",opts:["Electrolytic capacitor will, in all probability, suffer breakdown","Motor will not carry the load","Motor will draw excessively high current","Motor will not come up to the rated speed"],ans:0},
+  {q:"Repulsion motor ………….",opts:["Can be reversed by brush shifting","Can't be reversed","Can run in one direction only","None of the above"],ans:0},
+  {q:"Repulsion motor has ………….",opts:["One rotor wound type","Two rotor wound type","One rotor squirrel cage type","Two rotor squirrel cage type"],ans:0},
+  {q:"In Repulsion Motor, If the carbon brushes shifted 90 degree …….",opts:["There's no torque","The torque is max","The voltage across brushes increases","The voltage across brushes is max"],ans:0},
+  {q:"Compensated Repulsion Motor has ………",opts:["Another set of two brushes","Compensating winding","Additional Stator","All of the above"],ans:3},
+  {q:"Repulsion Start Induction Run motor has ……….",opts:["Centrifugal mechanism","Compensating winding","Additional Stator","None of the above"],ans:0},
+  {q:"Repulsion Induction motor has ………….",opts:["Double rotor","Wound rotor only","Squirrel cage rotor only","None of the above"],ans:0},
+  {q:"The core size of universal motor is ……... core size of dc series motor.",opts:["Equal","More than","Less than","None of them"],ans:1},
+  {q:"Universal motor can operate………...",opts:["AC","DC","AC & DC","None of them"],ans:2},
+  {q:"Universal motor has……….",opts:["High starting torque","Variable speed characteristics","Low starting torque","A and B"],ans:3},
+  {q:"Universal motor is ……….. motor.",opts:["Series wound","Parallel wound","Squirrel cage","None of them"],ans:0},
+  {q:"Concentrated-pole, non-compensated type Universal motor is……….",opts:["Low power rating","High power rating","Both a, b","None of them"],ans:0},
+  {q:"Distributed-field compensated type Universal motor is……….",opts:["Low power rating","High power rating","Both a, b","None of them"],ans:1},
+  {q:"The armature of Universal motor having………. Slots.",opts:["Straight","Skewed","Both a, b","None of them"],ans:2},
+  {q:"Distributed-field compensated type Universal motor has stator core similar to……….",opts:["Split phase motor","AC series motor","3 phases induction motor","Hysteresis motor"],ans:0},
+  {q:"Universal motor used ……… brushes to aid commutation.",opts:["High resistance","Low resistance","No","All of them"],ans:0},
+  {q:"Universal motor has ……….. torque.",opts:["Directional","Unidirectional","Both a, b","None of them"],ans:1},
+  {q:"Universal motor works on principle of………...",opts:["DC motor","Induction motor","Synchronous motor","None of them"],ans:0},
+  {q:"Speed of Universal motor is …… at full load, …….... at no load",opts:["Low, high","High, low","High, high","Low, low"],ans:0},
+  {q:"To reverse the rotation of Universal motor by……….",opts:["Reverse armature leads","Reverse armature & field leads","Reverse field leads","A or C"],ans:3},
+  {q:"Methods of speed control in Universal motor are………...",opts:["Resistance Method","Tapping-field method","Centrifugal Mechanism","All of them"],ans:3},
+  {q:"An outstanding feature of Universal motor is its …….",opts:["Best performance at 50 Hz supply","Slow speed at all loads","Excellent performance on dc supply","Highest output kW/kg ratio"],ans:3},
+  {q:"Speed of Universal motor is ………",opts:["Dependent on frequency of supply","Proportional to frequency of supply","Independent on frequency of supply","None of above"],ans:0},
+  {q:"For a reluctance motor, the reluctance torque increases with increase in torque angle, attaining maximum value when …………….",opts:["α = 90º","α = 54º","α = 30º","α = 45º"],ans:3},
+  {q:"Compensating winding is employed in an ac series motor in order to",opts:["Compensate for decrease in field flux","Reduce effects of armature reaction","Increase the total torque","Reduce the sparking at brushes"],ans:1},
+  {q:"A universal motor is one which ……………………….",opts:["Is available universally","Can be marketed internationally","Runs at dangerously high speed on no-load","Can be operated either on dc or ac supply"],ans:3},
+  {q:"Speed of the universal motor is ………………...",opts:["Dependent on frequency of supply","Independent of frequency of supply","Proportional to frequency of supply","None of the above"],ans:0},
+  {q:"The direction of rotation of a hysteresis motor is determined by the …………….",opts:["Retentivity of the rotor material","Amount of hysteresis loss","Permeability of rotor material","Position of shaded pole with respect to the main pole"],ans:3},
+  {q:"The yoke of an AC series motor is laminated to …………………….",opts:["Reduce copper loss","Reduce eddy current loss","Reduce hysteresis loss","All of these"],ans:1},
+  {q:"Which of the following motor is an interesting example of beneficially utilizing a phenomenon that is often considered undesirable?",opts:["Stepper motor","Reluctance motor","Hysteresis motor","Shaded-pole motor"],ans:2},
+  {q:"The torque of Hysteresis Motor ………………….",opts:["Is similar to that of DC shunt motor","Is similar to that of induction motor","Is constant from locked rotor to synchronous speed","Both (a) and (b) are correct"],ans:2},
+  {q:"The operation of ………... Motor depends on the presence of a continuously revolving magnetic flux.",opts:["PMDC motors","Repulsion motors","Disk motors","Hysteresis"],ans:3},
+  {q:"In single-phase series motor, the main purpose of inductively wound compensating winding is to reduce:",opts:["Armature reaction","Rotational emf of commutation","Transformer emf of commutation","All of these"],ans:0},
+  {q:"The operation of Hysteresis Motor depends on the presence of a continuously revolving magnetic flux",opts:["True","False"],ans:0},
+  {q:"If a dc series motor is operated on ac supply, it will …………",opts:["Have poor efficiency","Have poor power factor","Spark excessively","All of the above"],ans:3},
+  {q:"In single-phase series motor, the main purpose of inductively-wound compensating winding is to reduce:",opts:["Reactance emf of commutation","Rotational emf of commutation","Transformer emf of commutation","None of the above"],ans:3},
+  {q:"What is the value of motor speed? (250-W, 50-Hz, 220-V universal motor, dc: 2000 rpm, 1.0 A; ac: 220-V, 1.0 A rms, Ra=20Ω, La=0.4H)",opts:["1605 rpm","1905 rpm","1726 rpm","1700 rpm"],ans:0},
+  {q:"What is the value of power factor? (same motor)",opts:["0.96 lag","0.82 lag","0.86 lag","0.84 lag"],ans:1},
+  {q:"In the case of a reluctance motor, when the load is increased so that it cannot maintain synchronous speed the motor will",opts:["Become unstable","Run as an induction motor","Burn out","None of the above"],ans:1},
+  {q:"Reluctance motor operates on",opts:["DC only","AC only","Both DC and AC","Other"],ans:1},
+  {q:"......................................characteristic of a reluctance motor makes it very suitable for such applications as signaling devices, recording instruments, many kinds of timers",opts:["The constant-speed","The variable speed","The constant-torque","None of them"],ans:0},
+  {q:"Which of these are types of stepper motors?",opts:["Variable Reluctance","Permanent Magnet","Hybrid","All of them"],ans:3},
+  {q:"Which modes can a stepper motor operate in?",opts:["Full-step","Half-step","Micro-stepping","All of them"],ans:3},
+  {q:"Where are stepper motors commonly used?",opts:["Robotics","Textile machines","Printers","All of them"],ans:3},
+  {q:"What affects the step angle of a stepper motor?",opts:["Rotor poles","Stator poles","Number of phases","All of them"],ans:3},
+  {q:"What are benefits of micro-stepping?",opts:["Higher resolution","Smaller steps","Smoother motion","All of them"],ans:3},
+  {q:"What happens in half-step mode?",opts:["Steps are halved","Resolution increases","Uses both 1-phase and 2-phase ON modes","All of them"],ans:3},
+  {q:"What can cause a stepper motor to lose synchronism?",opts:["Sudden stop of pulses","Too fast stepping rate","Exceeding load torque","All of them"],ans:3},
+  {q:"Which features apply to a hybrid stepper motor?",opts:["Has permanent magnets","High resolution","Good detent torque","All of them"],ans:3},
+  {q:"Which characteristics apply to permanent magnet stepper motors?",opts:["Cylindrical rotor","Low power need","High detent torque","All of them"],ans:3},
+  {q:"What are features of VR (Variable Reluctance) stepper motors?",opts:["Wound stator","No permanent magnets","Ferromagnetic rotor","All of them"],ans:3},
+  {q:"Why is detent torque useful?",opts:["Holds rotor when power is off","Helps stop rotation quickly","Adds friction","All of them"],ans:3},
+  {q:"What's true about 2-phase ON mode?",opts:["Two phases excited","More holding torque","Steps remain full size","All of them"],ans:3},
+  {q:"A stepping motor is a ………………………. device.",opts:["Mechanical","Electrical","Analogue","Incremental"],ans:3},
+  {q:"Operation of stepping motors at high speeds is referred to as",opts:["Fast forward","Slewing","Inching","Jogging"],ans:1},
+  {q:"The rotational speed of a given stepper motor is determined solely by",opts:["Shaft load","Step pulse frequency","Polarity of stator current","Magnitude of stator current"],ans:1},
+  {q:"A stepper motor may be considered as a ……………………….. converter",opts:["DC to DC","AC to AC","DC to AC","Digital to Analogue"],ans:3},
+  {q:"The rotor of a stepper motor has no",opts:["Windings","Commutator","Brushes","All of the above"],ans:3},
+  {q:"Wave excitation of a stepper motor results in",opts:["Micro-stepping","Half-stepping","Increased step angle","Reduced resolution"],ans:1},
+  {q:"A VR stepper motor is constructed of ……………. Material with salient poles",opts:["Paramagnetic","Ferromagnetic","Diamagnetic","Non-magnetic"],ans:1},
+  {q:"The torque exerted by the rotor magnetic field of PM stepping motor with unexcited stator is called",opts:["Reluctance torque","Detent torque","Holding torque","Either (b) or (c)"],ans:3},
+  {q:"A single-stack, 4-phase, 6-pole VR stepper motor will have a step angle of",opts:["15°","30°","45°","90°"],ans:0},
+  {q:"A three-stack VR stepper motor has a step angle of 10°. What is the number of rotor teeth?",opts:["36","24","18","12"],ans:3},
+  {q:"If a hybrid stepper motor has a rotor pitch of 36° and a step angle of 9°, the number of its phases must be",opts:["4","2","3","6"],ans:0},
+  {q:"What is the step angle of a permanent-magnet stepper motor having 8 stator poles and 4 rotor poles?",opts:["15°","30°","45°","60°"],ans:2},
+  {q:"Which of the following phase switching sequence represents half-step operation of VR?",opts:["A, B, C, A...","A, C, B, A...","AB, BC, CA, AB...","A, AB, B, BC..."],ans:3},
+  {q:"A stepper motor having a resolution of 300 steps/rev and running at 2400 rpm has a pulse rate of pps",opts:["4000","8000","12000","10000"],ans:2},
+  {q:"A variable reluctance stepper motor is constructed of .................. material with salient poles.",opts:["Paramagnetic","Ferromagnetic","Diamagnetic","Non-magnetic"],ans:1},
+  {q:"The electrical displacement between the two stator windings of a resolver is",opts:["120°","90°","60°","45°"],ans:1},
+  {q:"Which of the following motor runs from a low dc supply and has permanently magnetized salient poles on its rotor?",opts:["Permanent-magnet DC motor","Disk DC motor","Permanent-magnet synchronous motor","Brushless DC motor"],ans:0},
+  {q:"The most common two-phase ac servomotor differs from the standard ac induction motor because it has",opts:["Higher rotor resistance","Higher power rating","Motor stator windings","Greater inertia"],ans:0},
+  {q:"Squirrel-cage induction motor is finding increasing application in high-power servo systems because new methods have been found to",opts:["Increase its rotor","Control its torque","Decrease its inertia","Decouple its torque"],ans:3},
+  {q:"A single-stack, 3-phase VR motor has a step angle of 15°. Find the number of its rotor poles",opts:["6","8","4","12"],ans:1},
+  {q:"A four-stack VR stepper motor has a step angle of 1.8°. Find the number of its rotor teeth",opts:["35","45","50","20"],ans:2},
+  {q:"Determine the stepping angle for a 3-phase, 24 pole PM stepper rotor.",opts:["6°","3°","4°","5°"],ans:3},
+  {q:"To obtain a stepping angle of 7.5° for a 3-phase PM stepper motor, how many poles should the rotor have?",opts:["16","18","11","19"],ans:0},
+  {q:"Calculate the stepping angle for a 3-stack, 16-tooth rotor VR stepper.",opts:["5°","7.5°","8.6°","10°"],ans:1},
+  {q:"A dc servomotor is similar to a regular DC motor except that its design is modified to cope with",opts:["Electronic switching","Slow speed","Static conditions","Both (b) and (c)"],ans:3},
+  {q:"The PMDC motors are similar to the ordinary DC shunt motors except that",opts:["Their field is provided by permanent magnets","Their field is provided by salient-pole wound-field structure","They have bigger brushes","They have a bigger commutator"],ans:0},
+  {q:"The efficiency of PMDC motors is higher as they have ………… as compared to wound-field dc motors.",opts:["No iron loss","No field Cu loss","No friction loss","Both (a) and (b)"],ans:1},
+  {q:"The only way to control the speed of a PMDC motor is to vary the armature voltage.",opts:["True","False"],ans:0},
+  {q:"The PMDC motors are used in servo drives because ……………….",opts:["Their speed-torque curve is a straight line","Their simple structure","Their low cost","They use permanent magnets"],ans:0},
+  {q:"The idea of Low-inertia DC motors is to make their armature mass …………...",opts:["Very high","High","Low","Very low"],ans:3},
+  {q:"The torque produced by Printed-circuit DC Motor is uniform even at low speeds as …………",opts:["The number of rotor ducts is very large","The rotor current is very high","The number of armature conductors is very large","All of these"],ans:2},
+  {q:"Which of the following motor would suit applications where constant speed is absolutely essential to ensure a consistent product?",opts:["Brushless dc motor","Disk motor","Permanent-magnet synchronous motor (PMSM)","Stepper motor"],ans:2},
+  {q:"Which of the following motor runs from a low dc supply and has permanently magnetized salient poles on its rotor?",opts:["Permanent-magnet DC motor","Disk DC motor","Permanent-magnet synchronous motor","Brushless DC motor"],ans:3},
+  {q:"The armature of printed-circuit DC Motor ……………….",opts:["Contains no iron","Has etched-copper conductors","Is disk-shaped","All of these"],ans:3},
+  {q:"A permanent-magnet dc. (PMDC) motor is similar to an ordinary .............. motor except that its field is provided by permanent magnets instead of salient-pole wound-field structure.",opts:["DC shunt","DC series","Switched reluctance","Synchronous"],ans:0},
+  {q:"Low-inertia DC Motors are so designed as to make their armature mass very low. This permits them to …… very quickly making them suitable for instrumentation applications.",opts:["Start","Stop","Change direction and speed","All of them"],ans:3},
+  {q:"The common types of low-inertia motors are……",opts:["Shell-type","Printed circuit","Both a and b","None of them"],ans:2},
+  {q:"In ….. motor, Its armature is made up of flat aluminum or copper coils bonded together to form a hollow cylinder.",opts:["Shell-type","Printed circuit","Both a and b","None of them"],ans:0},
+  {q:"The Low-inertia DC Motors are suitable for instrumentation applications.",opts:["True","False"],ans:0},
+  {q:"The control ........................ synchro has three phase winding both on its stator and rotor.",opts:["Differential","Transformer","Receiver","Transmitter"],ans:0},
+  {q:"Regarding voltages induced in the three stator windings of a synchro, which statement is false?",opts:["They depend on rotor position","They are in phase","They differ in magnitude","They are polyphase voltages"],ans:3},
+  {q:"The low-torque synchros cannot be used for",opts:["Torque transmission","Error detection","Instrument servos","Robot arm positioning"],ans:3},
+  {q:"Which of the following synchros are used for error detection in a servo control system?",opts:["Control transmitter","Control transformer","Control receiver","Both (a) and (b)"],ans:3},
+  {q:"For torque transmission over a long distance with the help of electrical wires only, which of the following two synchros are used?",opts:["CX and CT","CX and CR","CX and CD","CT and CD"],ans:1},
+  {q:"The arrangement required for producing a rotation equal to the sum or difference of the rotation of two shafts consists of the following coupled synchros.",opts:["Control transmitter","Control receiver","Control differential transmitter","All of the above"],ans:3},
+  {q:"What is the primary function of a synchro?",opts:["Convert DC to AC","Transmitting shaft position information","Increase torque in a servomotor","Act as a variable resistor"],ans:1},
+  {q:"Which of the following is NOT a trade name for synchros?",opts:["Selsyn","Autosyn","Resolver","Synchro"],ans:2},
+  {q:"Synchros are typically used in:",opts:["High-torque applications","Low-torque control systems","Power generation","Battery charging"],ans:1},
+  {q:"All of these are basic types of synchros EXCEPT:",opts:["Control Transmitter (CX)","Control Receiver (CR)","Control Differential (CD)","Variable Reluctance (VR) Synchro"],ans:3},
+  {q:"Which synchro type has a viscous damper on its rotor?",opts:["CX","CR","CT","CDX"],ans:1},
+  {q:"The synchro whose rotor and stator both have three-phase windings is the:",opts:["Control Transmitter (CX)","Control Receiver (CR)","Control Transformer (CT)","Control Differential (CD)"],ans:3},
+  {q:"In a CX, the rotor position is defined as electrical 'zero' when the rotor axis aligns with:",opts:["Stator winding 1","Stator winding 2","The stator neutral plane","Rotor salient pole axis"],ans:1},
+  {q:"Which device requires only single-phase excitation on its rotor?",opts:["CX","CR","CT","All of the above"],ans:3},
+  {q:"How does a CR differ from a CX?",opts:["CR has no rotor","CR has a damper","CR cannot receive signals","CR has no stator"],ans:1},
+  {q:"A CDX has mechanical input θ and electrical input φ. Its output is:",opts:["θ + φ","θ – φ","φ – θ","θ × φ"],ans:1},
+  {q:"A CDR differs from CDX by having:",opts:["Only stator inputs","Only rotor inputs","Two electrical inputs and mechanical output","Three mechanical inputs"],ans:2},
+  {q:"Which synchro type uses a smooth cylindrical rotor?",opts:["CX","CR","CT","CD"],ans:3},
+  {q:"In error detection application,",opts:["Only CX rotor is energized from single phase ac supply","Only CX rotor is energized from three phase ac supply","Only CT rotor is energized from single phase ac supply","Only CT rotor is energized from three phase ac supply"],ans:0},
+  {q:"Which synchro type was earlier called a 'generator'?",opts:["Control Receiver (CR)","Control Transmitter (CX)","Control Transformer (CT)","Control Differential (CD)"],ans:1},
+  {q:"Which of the following type of motors operates on the same basic principle as a variable reluctance stepper motor?",opts:["DC Servo motor","Linear Induction Motor","Switched Reluctance Motor","Permanent Magnet Synchronous Motor"],ans:2},
+  {q:"What is the advantage of Switched Reluctance Motors (SRMs) compared to stepper motors?",opts:["They rotate in steps","They are designed primarily for open-loop operation","They have higher efficiency","They have low power ratings"],ans:2},
+  {q:"In DC servomotors how is speed typically controlled?",opts:["By varying the frequency of the source voltage","By varying the armature voltage","By varying the armature resistance","By varying the number of motor poles"],ans:1},
+  {q:"What is the characteristic of servo motors?",opts:["They are used for continuous energy conversion","They are used for precise speed and position control","They have low torque capabilities","They are used for large industrial applications"],ans:1},
+  {q:"What is a fundamental difference between a resolver and a synchro?",opts:["The number of stator windings","The electrical displacement between stator windings","The number of rotor windings","All of the above"],ans:3},
+  {q:"Which of the following is true about two-phase AC servo motors?",opts:["The stator has two windings displaced by 120 electrical degrees","Both stator windings are supplied with a constant voltage","One stator winding is supplied with a constant voltage, and the other with a variable voltage","Speed is controlled by varying the frequency of the source voltage"],ans:2},
+  {q:"What are typical applications of Switched Reluctance Motors (SRMs)?",opts:["Traction drives","Domestic appliances","Office and business equipment","All of the above"],ans:3},
+  {q:"What are the drawbacks of Switched Reluctance Motors (SRMs)?",opts:["Relatively unproven","Noisy","Not well-suited for smooth torque production","All of the above"],ans:3},
+  {q:"The rotational speed of a given stepper motor is determined solely by the",opts:["Shaft load","Step pulse frequency","Polarity of stator current","Magnitude of stator current"],ans:1},
+  {q:"A stepper motor may be considered as converter.",opts:["DC to DC","AC to AC","DC to AC","Digital-to-analogue"],ans:3},
+  {q:"The rotor of a stepper motor has no",opts:["Windings","Commutator","Brushes","All of the above"],ans:3},
+  {q:"Which of the following synchros are used for error detection in a servo control system?",opts:["Control transmitter","Control transformer","Control receiver","Both (a) and (b)"],ans:3},
+  {q:"The torque exerted by the rotor magnetic field of a PM stepping motor with unexcited stator is called torque.",opts:["Reluctance","Detent","Holding","Either (b) or (c)"],ans:3},
+  {q:"The electrical displacement between the two stator windings of a resolver is",opts:["120°","90°","60°","45°"],ans:1},
+  {q:"Squirrel-cage induction motor is finding increasing application in high-power servo systems because new methods have been found to",opts:["Increase its rotor resistance","Control its torque","Decrease its inertia","Decouple its torque and flux"],ans:3},
+  {q:"Which of the following motor would suit applications where constant speed is absolutely essential to ensure a consistent product?",opts:["Brushless dc motor","Disk motor","Permanent-magnet synchronous motor","Stepper motor"],ans:2},
+  {q:"The most common two-phase ac servo motor differs from the standard ac induction motor because it has",opts:["Higher rotor resistance","Higher power rating","Motor stator windings","Greater inertia"],ans:0},
+  {q:"For starting a Schrage motor, 3-φ supply is connected to",opts:["Stator","Rotor via slip-rings","Regulating winding","Secondary winding via brushes"],ans:1},
+  {q:"The ………… respond to error signal abruptly and accelerate the load quickly.",opts:["Stepper motors","Schrage motors","Servomotors","Low inertia motors"],ans:2},
+  {q:"For starting a Schrage motor, 3-phase supply is connected to",opts:["Rotor via slip rings","Regulating windings","Secondary winding via brushes","Stator as in an ordinary induction motor"],ans:0},
+  {q:"When the brushes of a Schrage motor are moved apart, the speed of the motor",opts:["Decreases","Increases","Both a and b","None of these"],ans:0},
+  {q:"When the brushes of a Schrage motor are moved apart symmetrically, the P.F of the motor",opts:["Improves","Becomes poor","Is not affected","Nothing can be said"],ans:2},
+  {q:"For starting a Schrage motor, three phase supply is connected to",opts:["Stator","Rotor","Commutator","None of the above"],ans:1},
+  {q:"Linear induction motor is used in",opts:["Conveyors","Elevators","Accelerator","Traction"],ans:3},
+  {q:"The linear induction motor has a lower power factor because of",opts:["The high-speed operation","The larger air-gap","The conductors of secondary","All of these"],ans:3},
+  {q:"Which motor provides direct linear motion without gears or rotary-to-linear conversion?",opts:["Stepper motor","Linear Induction Motor","DC Series Motor","Universal motor"],ans:1},
+  {q:"Which of the following can be fixed in a LIM system?",opts:["Only the rotor","Only the stator","Either the primary or secondary","None of the parts"],ans:2},
+  {q:"The Schrage motor is also known as:",opts:["Series motor","Brush Shift AC Motor","Switched reluctance motor","Servo motor"],ans:1},
+  {q:"What happens when the regulating voltage aids the induced voltage in a Schrage motor?",opts:["Speed decreases","Speed increases","Motor stops","Voltage is nullified"],ans:1},
+  {q:"Schrage motor can operate at:",opts:["Constant speed only","Above or below synchronous speed","Only below synchronous speed","Fixed frequencies only"],ans:1},
+  {q:"The secondary of LIM can be described as:",opts:["Three-phase winding","Laminated rotor core","Flat aluminum conductor with ferromagnetic core","Superconducting coil"],ans:2},
+  {q:"What is one challenge of LIM systems?",opts:["They are too noisy","Difficult to cool","End effects that reduce efficiency","Can only operate in water"],ans:2},
+  {q:"What type of speed control is provided by Schrage motors?",opts:["Step control","Discrete speed control","Smooth and continuous control","Two-speed only"],ans:2},
+  {q:"What is the main difference between a Linear Induction Motor (LIM) and a conventional induction motor?",opts:["LIM produces rotational motion","LIM has a permanent magnet rotor","LIM produces linear motion","LIM is used only in elevators"],ans:2},
+  {q:"The moving magnetic field in LIM is created by:",opts:["Single-phase AC supply","DC voltage","Three-phase AC supply","Permanent magnets"],ans:2},
+  {q:"What is the name of the Linear Induction Motor with a single primary side?",opts:["DLIM","MLIM","SLIM","BLIM"],ans:2},
+  {q:"In a Schrage motor, when brushes A and B are directly opposite each other, the regulating voltage is:",opts:["Maximum","Minimum","Zero","Infinite"],ans:0},
+  {q:"In a Schrage motor operating at super synchronous speed, the injected emf and the standstill secondary induced emf",opts:["Are in phase with each other","Are at 90º in time phase with each other","Are in phase opposition","None of the above"],ans:0},
+  {q:"Where is the voltage induced in a brushless synchronous generator?",opts:["In the field winding of the main generator","In the DC rectifier","In the stationary armature of the main generator","Only in the rotating part"],ans:2},
+  {q:"When a dc rectifier is added to the output of a brushless generator what is that called?",opts:["AC motor","DC motor","Brushless DC generator","Transformer"],ans:2},
+  {q:"What is the function of the auxiliary alternator in the brushless synchronous motor?",opts:["To cool the motor","To supply power to the stator","To generate AC voltage for field excitation","To control speed"],ans:2},
+  {q:"Which of the following is not an advantage of brushless synchronous motors?",opts:["Reduced sparking","Increased brush maintenance","Reduced wear and tear","Improved reliability"],ans:1},
+  {q:"In third-brush generator, the third brush provides ............... irrespective to the speed.",opts:["Constant flux","Constant armature reaction","Constant voltage","None of these"],ans:2},
+  {q:"The third brush generator is mainly used for:",opts:["Constant voltage regulation","Automatic current control without external regulator","Enhancing motor speed","Increasing torque output"],ans:1},
+  {q:"In a third brush generator, the third brush is placed:",opts:["Opposite to the main brushes","At a fixed point regardless of load","At a position that controls the field winding current","Parallel to the armature core"],ans:2},
+  {q:"In BLDC motors, commutation is achieved by:",opts:["Mechanical switching","Magnetic switches","Electronic circuits using position sensors","Permanent magnets only"],ans:2},
+  {q:"BLDC motors are commonly used in:",opts:["Steam turbines","Home lighting systems","Drones and electric vehicles","Analog clocks"],ans:2},
+  {q:"A BLDC motor differs from a conventional DC motor mainly by:",opts:["Using brushes with alternating polarity","Replacing the commutator with electronic control","Having no permanent magnets","Requiring manual commutation"],ans:1},
+  {q:"A 3-phase induction motor is called a 3-phase induction generator........",opts:["When its speed is equal to synchronous speed","When its slip is negative","When it is driven at a speed higher than synchronous speed","Both (b) and (c)"],ans:3},
+  {q:"The induction generator cannot work in isolation because ………………….",opts:["It requires reactive power from the supply","It has a lower efficiency","It has lower power factors","It requires a variable speed prime mover"],ans:0},
+  {q:"Induction generator is self-excited machine.",opts:["True","False"],ans:1},
+  {q:"The Energy Efficient Motor have near uniform efficiencies between ……………. of load.",opts:["20 and 70%","30 and 80%","40 and 90%","50 and 100%"],ans:3},
+  {q:"A self-excited induction generator .........",opts:["Must have static capacitor bank","Must have static shunt inductance bank","Must have static resistance bank","Any of the mentioned"],ans:0},
+  {q:"Which is the most acceptable application field where an induction generator can be used?",opts:["Wind power system","Steam power system","Hydro power system","Nuclear power station"],ans:0},
+  {q:"What is the main reason for preferring submersible pumps (ESP) over jet pumps?",opts:["Because they are cheaper","Because they draw fluid from the source","Because they prevent cavitation in the pump","Because they are smaller than jet pumps"],ans:2},
+  {q:"What is the basic working principle of a submersible pump in ESP systems?",opts:["Converting electrical energy into thermal energy","Using air pressure to lift the fluid","Converting kinetic energy into pressure energy through the diffuser","Using gravity to pull the fluid upward"],ans:2},
+  {q:"What is one of the main operational drawbacks of ESP pumps?",opts:["They cannot be used in deep wells","Their efficiency significantly decreases when there is a high percentage of gas","They require low energy to operate","They only work at low temperatures"],ans:1},
+  {q:"What type of motor is used in the submersible system?",opts:["Three-phase squirrel cage induction motor","DC motor","Single-phase capacitor start capacitor run motor","A and C"],ans:3},
+  {q:"What material is the stator core made of in the submersible motor?",opts:["Copper","High-grade silicon steel","Aluminum","Stainless steel"],ans:1},
+  {q:"In which position are submersible pumps used in ESP installations placed?",opts:["Any desired position","Inclined at 60°","Horizontal","Vertical"],ans:3},
+];
+
+// ─── State ─────────────────────────────────────
+let questions = [];
+let current = 0;
+let answered = [];   // null | true | false per question index
+let score = { correct: 0, wrong: 0 };
+let autoTimer = null;
+const AUTO_DELAY = 1500; // ms
+
+function init() {
+  questions = [...RAW];
+  current = 0;
+  answered = Array(questions.length).fill(null);
+  score = { correct: 0, wrong: 0 };
+  updateScore();
+  renderQuestion();
+}
+
+function shuffleAndRestart() {
+  questions = [...RAW].sort(() => Math.random() - 0.5);
+  current = 0;
+  answered = Array(questions.length).fill(null);
+  score = { correct: 0, wrong: 0 };
+  updateScore();
+  document.getElementById('finish-screen').classList.remove('show');
+  document.getElementById('q-card').style.display = '';
+  document.querySelector('.controls').style.display = '';
+  document.querySelector('.kb-hint').style.display = '';
+  renderQuestion();
+}
+
+function restart() {
+  init();
+  document.getElementById('finish-screen').classList.remove('show');
+  document.getElementById('q-card').style.display = '';
+  document.querySelector('.controls').style.display = '';
+  document.querySelector('.kb-hint').style.display = '';
+}
+
+// ─── Render ─────────────────────────────────────
+function renderQuestion() {
+  clearAutoTimer();
+  if (current >= questions.length) { showFinish(); return; }
+
+  const q = questions[current];
+  const total = questions.length;
+
+  document.getElementById('q-num').textContent = `Question ${current + 1} / ${total}`;
+  document.getElementById('q-text').textContent = q.q;
+
+  // Progress
+  const pct = Math.round((current / total) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = `${current} / ${total}`;
+
+  // Options
+  const optDiv = document.getElementById('q-options');
+  optDiv.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const el = document.createElement('div');
+    el.className = 'option';
+    el.dataset.idx = i;
+    el.innerHTML = `
+      <span class="key-badge">${i + 1}</span>
+      <span class="option-text">${opt}</span>
+      <span class="status-icon">${i === q.ans ? '✓' : '✗'}</span>
+    `;
+    el.addEventListener('click', () => selectAnswer(i));
+    optDiv.appendChild(el);
+  });
+
+  // Feedback reset
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  fb.textContent = '';
+
+  const ab = document.getElementById('advance-bar');
+  ab.classList.remove('show');
+
+  // If already answered, restore state
+  if (answered[current] !== null) {
+    applyAnsweredState(answered[current]);
+  }
+}
+
+function selectAnswer(idx) {
+  if (answered[current] !== null) return;
+
+  const q = questions[current];
+  const isCorrect = idx === q.ans;
+  answered[current] = isCorrect;
+
+  if (isCorrect) score.correct++;
+  else score.wrong++;
+  updateScore();
+
+  applyAnsweredState(isCorrect, idx);
+  startAutoAdvance();
+}
+
+function applyAnsweredState(isCorrect, chosenIdx) {
+  const q = questions[current];
+  const opts = document.querySelectorAll('.option');
+
+  opts.forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === q.ans) el.classList.add('correct');
+    else if (chosenIdx !== undefined && i === chosenIdx && !isCorrect) el.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('q-feedback');
+  if (isCorrect) {
+    fb.className = 'feedback correct-fb show';
+    fb.textContent = '✓ Correct answer!';
+  } else {
+    fb.className = 'feedback wrong-fb show';
+    fb.textContent = `✗ Wrong answer — Correct: ${q.opts[q.ans]}`;
+  }
+}
+
+function startAutoAdvance() {
+  const ab = document.getElementById('advance-bar');
+  const fill = document.getElementById('advance-fill');
+  ab.classList.add('show');
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fill.style.transition = `width ${AUTO_DELAY}ms linear`;
+      fill.style.width = '0%';
+    });
+  });
+
+  autoTimer = setTimeout(() => {
+    nextQ();
+  }, AUTO_DELAY);
+}
+
+function clearAutoTimer() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+}
+
+function nextQ() {
+  clearAutoTimer();
+  if (current < questions.length - 1) { current++; renderQuestion(); }
+  else if (answered[current] !== null) showFinish();
+}
+
+function prevQ() {
+  clearAutoTimer();
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+function updateScore() {
+  document.getElementById('sc-correct').textContent = score.correct;
+  document.getElementById('sc-wrong').textContent = score.wrong;
+  const done = answered.filter(a => a !== null).length;
+  document.getElementById('sc-left').textContent = questions.length - done;
+}
+
+function showFinish() {
+  document.getElementById('q-card').style.display = 'none';
+  document.querySelector('.controls').style.display = 'none';
+  document.querySelector('.kb-hint').style.display = 'none';
+
+  const total = questions.length;
+  const pct = Math.round((score.correct / total) * 100);
+  document.getElementById('fin-correct').textContent = score.correct;
+  document.getElementById('fin-wrong').textContent = score.wrong;
+  document.getElementById('fin-pct').textContent = pct + '%';
+  document.getElementById('fin-total').textContent = total;
+
+  const icon = pct >= 80 ? '🏆' : pct >= 60 ? '🎉' : pct >= 40 ? '📚' : '💪';
+  const title = pct >= 80 ? 'Excellent!' : pct >= 60 ? 'Very Good!' : pct >= 40 ? 'Needs Review' : 'Keep Trying!';
+  document.getElementById('finish-icon').textContent = icon;
+  document.getElementById('finish-title').textContent = title;
+
+  document.getElementById('finish-screen').classList.add('show');
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-label').textContent = `${total} / ${total}`;
+}
+
+// ─── Keyboard ───────────────────────────────────
+document.addEventListener('keydown', e => {
+  const key = e.key;
+  if (['1','2','3','4'].includes(key)) {
+    const idx = parseInt(key) - 1;
+    const q = questions[current];
+    if (q && idx < q.opts.length) selectAnswer(idx);
+  }
+  if (key === 'ArrowRight') prevQ();
+  if (key === 'ArrowLeft')  nextQ();
+});
+
+// ─── Boot ───────────────────────────────────────
+init();
+</script>
+
+
+</body></html>
